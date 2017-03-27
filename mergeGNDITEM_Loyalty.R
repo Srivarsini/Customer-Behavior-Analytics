@@ -47,5 +47,39 @@ mergedDF = merge(gnditem_filtered_new,loyalty_data, by.x = c("dlTableStoreNumber
                  by.y = c("StoreNumber", "ReceiptNumber", "ModDate") )
 head(mergedDF)
 
+#Merge Loyalty with GNDTNDR
+
+gndtndr = read.df('C:/Users/Sriva/Desktop/GeorgeMason/Spring2017/DAEN690/R Scripts/src/TLD/GNDTNDR.csv','csv',header='true',inferSchema = 'true',na.strings='NA')
+
+head(gndtndr)
+head(loyalty_data)
+
+createOrReplaceTempView(gndtndr, "table")
+gndtndr_filtered <- sql("Select * from table where AMOUNT > 0")
+
+nrow(gndtndr)
+nrow(gndtndr_filtered)
+
+gndtndr_filtered$dob <- date_format(gndtndr_filtered$DATE, 'YYYY-MM-dd')
+gndtndr_filtered$time <- concat_ws(sep = ':',gndtndr_filtered$HOUR,gndtndr_filtered$MINUTE)
+gndtndr_filtered$time <- date_format(gndtndr_filtered$time, 'HH:mm')
+head(gndtndr_filtered)
+
+gndtndr_filtered$Moddob <- concat_ws(sep = ' ',gndtndr_filtered$dob,gndtndr_filtered$time) 
+head(gndtndr_filtered)
+
+mergedDF_GNDTNDR_Loyalty = merge(gndtndr_filtered,loyalty_data, by.x = c("StoreNumber" ,"CHECK", "Moddob"), 
+                                 by.y = c("StoreNumber", "ReceiptNumber", "ModDate") )
+head(mergedDF_GNDTNDR_Loyalty)
+nrow(mergedDF_GNDTNDR_Loyalty)
+
+###mdf <- repartition(mergedDF_GNDTNDR_Loyalty,1)
+#spark_write_csv(mergedDF_GNDTNDR_Loyalty, 'C:/Users/Sriva/Desktop/GeorgeMason/Spring2017/DAEN690/R Scripts/src/TLD/mergedDF_GNDTNDR_Loyalty.csv', header = TRUE, delimiter = ",",charset = "UTF-8", null_value = NULL,options = list())
+#write.df(mdf,'C:/Users/Sriva/Desktop/GeorgeMason/Spring2017/DAEN690/R Scripts/src/TLD/mergedOutput',source = 'csv')
+
+#write.csv(file = "mergedCSVV.csv",mergedDF_GNDTNDR_Loyalty)
+#write.text(mergedDF_GNDTNDR_Loyalty, 'C:/Users/Sriva/Desktop/GeorgeMason/Spring2017/DAEN690/R Scripts/src/TLD/mergedOutput')
+
+
 
 
